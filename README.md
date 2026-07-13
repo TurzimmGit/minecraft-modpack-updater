@@ -12,7 +12,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/License-MIT-00AF5C?style=flat-square&logo=opensourceinitiative&logoColor=white"/>
-  <img src="https://img.shields.io/badge/For-Minecraft Players-00AF5C?style=flat-square&logo=internet-computer&logoColor=white"/>
+  <img src="https://img.shields.io/badge/For-Minecraft-00AF5C?style=flat-square&logo=internet-computer&logoColor=white"/>
   <img src="https://img.shields.io/badge/🛠_Status-Developing-00AF5C?style=flat-square"/>
 </p>
 
