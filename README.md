@@ -254,6 +254,8 @@ If anything goes wrong or if you simply want to downgrade later, just run the sc
 
 - [/] Mod Loader Validation: Implement guided checkups to alert users if their Fabric, Forge, or NeoForge loaders need manual updates.
 
+- [/] Automated Mod Downloading: Extract file URLs from payload and download the updated `.jar` files directly
+
 - [ ] Dependency Resolution: Automatically detect and download core library mods required by your main mods.
 
 - [ ] Multi-Profile Support: Manage independent mod folders or different game instances from a single script configuration support.
