@@ -38,13 +38,15 @@ def calculate_hash():
     return hash_list
 
 
-def backup_modpack(name,source_path):
+def backup_modpack():
     
     os.makedirs(DESTINY_DIRECTORY, exist_ok=True)
     
-    file_path = os.path.join(DESTINY_DIRECTORY, f'{name}')
-    
-    root_dir = source_path 
-  
-    shutil.copy2(root_dir,file_path)
-        
+    for file_name in getList():
+        origin = os.path.join(path, file_name)
+        destiny = os.path.join(DESTINY_DIRECTORY, file_name)
+        shutil.copy2(origin, destiny)
+   
+def clean_mods_folder():
+    for file_name in getList():
+        os.remove(os.path.join(path, file_name))

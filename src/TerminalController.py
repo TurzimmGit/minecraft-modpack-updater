@@ -1,4 +1,4 @@
-
+from src import core
 
 def menu():
     print("\n================")
@@ -18,10 +18,11 @@ def mod_loader_menu():
     print("4 - Quilt")
     print("================\n")
     
-def select_version():
+def select_version(mod_loader):
     
     version = input("Type what version ypu want to update to: \n")
-    
+
+    core.check_for_updates(version,mod_loader)
     
 def select_mod_loader():
     mod_loader_dict = {
@@ -35,5 +36,3 @@ def select_mod_loader():
     new_mod_loader = int(input("What's your modloader?"))
     
     return mod_loader_dict[new_mod_loader]
-    
-    
