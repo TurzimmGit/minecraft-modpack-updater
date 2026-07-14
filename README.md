@@ -248,11 +248,11 @@ If anything goes wrong or if you simply want to downgrade later, just run the sc
 ## 🌈 Roadmap
 
 
-- [ ] Modrinth API Integration: Connect and dynamically fetch metadata structures from the official endpoint.
+- [X] Modrinth API Integration: Connect and dynamically fetch metadata structures from the official endpoint.
 
-- [ ] Automated Local Backups: Create zip/folder state copies inside backupmods/ before executing modifications.
+- [X] Automated Local Backups: Create zip/folder state copies inside backupmods/ before executing modifications.
 
-- [ ] Mod Loader Validation: Implement guided checkups to alert users if their Fabric, Forge, or NeoForge loaders need manual updates.
+- [/] Mod Loader Validation: Implement guided checkups to alert users if their Fabric, Forge, or NeoForge loaders need manual updates.
 
 - [ ] Dependency Resolution: Automatically detect and download core library mods required by your main mods.
 
