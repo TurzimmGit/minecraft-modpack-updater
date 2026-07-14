@@ -80,109 +80,96 @@ What differentiates this tool is its focus on safety, speed, and clear terminal 
 | 🎯 | **Core Functionality** | Automates client-side modpack updates by fetching compatible files directly from the Modrinth API |
 | 🛠️ | **System Structure**   | Modular Python architecture executed entirely through a lightweight and interactive terminal interface |
 | 🔍 | **Logging & Debugging** | Scans and alerts the user about mod compatibility, flagging if a mod only has alpha/beta releases available |
-| 🛡️ | **Safety & Bakcup** | Automatically backs up current mods before updating, allowing seamless rollbacks and version downgrades |
+| 🛡️ | **Safety & Backup** | Automatically backs up current mods before updating, allowing seamless rollbacks and version downgrades |
 
 
 ---
 
 <!-- Project Structure -->
-<!--
+
 <a id="project-structure"></a>
 ## 📁 Project Structure
 
 
   ```sh
-  ProjectName/
-  ├── src/                     # Core source code
-  │   ├── main.ext             # Main entry point
-  │   ├── module_one.ext       # First functional module
-  │   ├── module_two.ext       # Second functional module
-  │   └── utils/               # Utility helpers and shared logic
-  │       ├── helper_one.ext
-  │       └── helper_two.ext
-  ├── docs/                    # Documentation files
-  │   ├── README.md            # Main project readme
-  │   └── guides.md            # Additional guides or tutorials
-  ├── tests/                   # Automated tests
-  │   ├── test_one.ext
-  │   └── test_two.ext
-  ├── assets/                  # Images, icons, datasets, or static files
-  │   ├── image.png
-  │   └── sample.json
-  ├── LICENSE                  # Project license
-  ├── .gitignore               # Git ignore rules
-  └── requirements.txt         # Dependencies list (or package.json, etc)
+    minecraft-modpack-updater/
+    ├── backupmods/               # Automated local backups directory
+    ├── Main                      # Main file where you run the program
+    ├── assets                     # Assets stuff
+    └── src/                      # Core source code
+        ├── api.py                # Modrinth API integration and slug fetching
+        ├── core.py               # Main update workflow and download manager
+        ├── io_local.py           # File system scanner and JAR metadata extractor
+        ├── TerminalController.py # UI/UX text formatting and terminal styling
+        └── mods.json             # Local database mapping JARs to Modrinth IDs
   ```
 
 <a id="project-index"></a>
 ### 🗂️ Project Index
-
-    Esta seção serve para documentar toda a estrutura do projeto,
-    separada por pastas, com tabelas contendo descrição dos arquivos.
-    Você pode repetir o bloco <details> quantas vezes quiser.
--->
-<!--
 <details open>
-
-    <summary><b><code>project_root/</code></b></summary>
-
-    <details>
-        <summary><b>src (Main Module)</b></summary>
-        <blockquote>
-        
-            <div class='directory-path' style='padding: 8px 0; color: #666;'>
-                <code><b>⦿ src</b></code>
-            </div>
-            <table style='width: 100%; border-collapse: collapse;'>
-                <thead>
-                    <tr style='background-color: #f8f9fa;'>
-                        <th style='width: 30%; text-align: left; padding: 8px;'>File</th>
-                        <th style='text-align: left; padding: 8px;'>Description</th>
-                    </tr>
-                </thead>
-          
-                <tr style='border-bottom: 1px solid #eee;'>
-                    <td style='padding: 8px;'>
-                        <b><a href='./src/example.py'>example.py</a></b>
-                    </td>
-                    <td style='padding: 8px;'>
-                        - Entry point for the module<br>
-                        - Main logic implementation<br>
-                        - Handles core processing flow
-                    </td>
+    <summary><b>src (Main Module)</b></summary>
+    <blockquote>
+        <div class='directory-path' style='padding: 8px 0; color: #666;'>
+            <code><b>⦿ src</b></code>
+        </div>
+        <table style='width: 100%; border-collapse: collapse;'>
+            <thead>
+                <tr style='background-color: #f8f9fa;'>
+                    <th style='width: 30%; text-align: left; padding: 8px;'>File</th>
+                    <th style='text-align: left; padding: 8px;'>Description</th>
                 </tr>
-            </table>
-        </blockquote>
-    </details>
-  
-    <details>
-        <summary><b>utils (Utilities)</b></summary>
-        <blockquote>
-            <div class='directory-path' style='padding: 8px 0; color: #666;'>
-                <code><b>⦿ utils</b></code>
-            </div>
-            <table style='width: 100%; border-collapse: collapse;'>
-                <thead>
-                    <tr style='background-color: #f8f9fa;'>
-                        <th style='width: 30%; text-align: left; padding: 8px;'>File</th>
-                        <th style='text-align: left; padding: 8px;'>Description</th>
-                    </tr>
-                </thead>
-                <tr style='border-bottom: 1px solid #eee;'>
-                    <td style='padding: 8px;'>
-                        <b><a href='./src/utils/sample.py'>sample.py</a></b>
-                    </td>
-                    <td style='padding: 8px;'>
-                        - Helper utility<br>
-                        - Shared functions<br>
-                        - Common processing tasks
-                    </td>
-                </tr>
-            </table>
-        </blockquote>
-    </details>
+            </thead>
+            <tr style='border-bottom: 1px solid #eee;'>
+                <td style='padding: 8px;'>
+                    <b><a href='./src/core.py'>core.py</a></b>
+                </td>
+                <td style='padding: 8px;'>
+                    - Orchestrates the update verification cycle<br>
+                    - Filters game versions and mod loaders compatibility<br>
+                    - Downloads updated .jar files directly to the active folder
+                </td>
+            </tr>
+            <tr style='border-bottom: 1px solid #eee;'>
+                <td style='padding: 8px;'>
+                    <b><a href='./src/api.py'>api.py</a></b>
+                </td>
+                <td style='padding: 8px;'>
+                    - Interfaces with the official Modrinth API<br>
+                    - Implements robust validation filters to prevent wrong ID matches<br>
+                    - Features dynamic slug manipulation (fixes suffixes, prefix inversion, and forks)
+                </td>
+            </tr>
+            <tr style='border-bottom: 1px solid #eee;'>
+                <td style='padding: 8px;'>
+                    <b><a href='./src/io_local.py'>io_local.py</a></b>
+                </td>
+                <td style='padding: 8px;'>
+                    - Handles all disk operations (reading/writing database configurations)<br>
+                    - Scans the target folder ignoring non-mod assets (like system files)<br>
+                    - Parses internal `.jar` structures to extract Fabric IDs
+                </td>
+            </tr>
+            <tr style='border-bottom: 1px solid #eee;'>
+                <td style='padding: 8px;'>
+                    <b><a href='./src/TerminalController.py'>TerminalController.py</a></b>
+                </td>
+                <td style='padding: 8px;'>
+                    - Manages command-line UI elements, formatting, and colors<br>
+                    - Standardizes console outputs, error messages, and success logs
+                </td>
+            </tr>
+            <tr style='border-bottom: 1px solid #eee;'>
+                <td style='padding: 8px;'>
+                    <b><a href='./src/mods.json'>mods.json</a></b>
+                </td>
+                <td style='padding: 8px;'>
+                    - Persists mapped mod associations as key-value pairs (`JAR_filename: modrinth_id`)
+                </td>
+            </tr>
+        </table>
+    </blockquote>
 </details>
--->
+
 ---
 
 <a id="get-started"></a>
@@ -199,7 +186,7 @@ To run the Minecraft Modpack Updater, you just need Python installed on your sys
 
 #### **1. Clone the repository**
 ```bash
-git clone [https://github.com/Turzimmgit/minecraft-modpack-updater.git](https://github.com/Turzimmgit/minecraft-modpack-updater.git)
+git clone https://github.com/Turzimmgit/minecraft-modpack-updater.git
 cd minecraft-modpack-updater
 ```
 <!--
@@ -220,7 +207,7 @@ DB_URL=your_database_url_here
 #### **2. Run the project**
 
 ```bash
-python main.py
+python Main.py
 ```
 
 ---
@@ -254,7 +241,7 @@ If anything goes wrong or if you simply want to downgrade later, just run the sc
 
 - [/] Mod Loader Validation: Implement guided checkups to alert users if their Fabric, Forge, or NeoForge loaders need manual updates.
 
-- [/] Automated Mod Downloading: Extract file URLs from payload and download the updated `.jar` files directly
+- [X] Automated Mod Downloading: Extract file URLs from payload and download the updated `.jar` files directly
 
 - [ ] Dependency Resolution: Automatically detect and download core library mods required by your main mods.
 

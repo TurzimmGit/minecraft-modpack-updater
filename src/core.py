@@ -1,76 +1,171 @@
 from src import api
 from src import io_local
 import os
+import requests
+import platform
 
-def check_for_updates(version,mod_loader):
+def check_for_updates(version, mod_loader):
+    all_files = io_local.getList()
+    physical_mods = [f for f in all_files if f.lower().endswith('.jar')]
     
-    hashes_list = api.getAPIData()
+    if not physical_mods:
+        print("\nNo data received the mods folder is empty).\n")
+        return
+
+    mods_db = io_local.sync_mods_database(physical_mods)
     
-    if not hashes_list:
-        print("No data received from Modrinth API (or mods folder is empty).")
+    local_mods_mapped = []
+    database_updated = False
+    
+    loader_str = (mod_loader or "fabric").lower()
+    
+    print("Verifiyng local IDs...")
+    for file_name in physical_mods:
+        project_id = mods_db.get(file_name)
+        
+        if not project_id:
+            print(f" -> New Mod detected: {file_name}. Searching for Metadata...\n")
+            fabric_id = io_local.get_mod_id_from_jar(file_name)
+        
+            if fabric_id:
+                project_id = api.get_project_id_by_slug(fabric_id)
+                if project_id:
+                    mods_db[file_name] = project_id
+                    database_updated = True
+                    print(f"    [Success] mapped: {fabric_id} -> ID: {project_id}")
+                else:
+                    print(f"    [Warning] Modrinth didn't reconize the fabric ID: '{fabric_id}'")
+            else:
+                if file_name!= "desktop.ini":
+                    print(f"    [Warning] It was not possible to read the fabric.mod.json at {file_name}")
+        if not project_id:
+            print(f"\n[!] Não conseguimos mapear automaticamente o mod: {file_name}")
+            user_input = input(f"Por favor, digite o ID do Modrinth ou a URL do mod '{fabric_id}' (ou aperte Enter para pular): ").strip()
+            
+            if user_input:
+                if "modrinth.com/mod/" in user_input:
+                    project_id = user_input.split("/mod/")[-1].split("/")[0]
+                else:
+                    project_id = user_input
+                    project_id = api.get_project_id_by_slug(project_id)
+
+        if project_id:
+            local_mods_mapped.append({
+                'title': file_name.replace('.jar', ''),
+                'project_id': project_id
+            })
+
+    if database_updated:
+        io_local.save_mods_database(mods_db)
+
+    if not local_mods_mapped:
+        print("No valid mod to update!")
         return
     
-    compatible_mods= []
+    print("\nChecking for updates in Modrinth...\n")
+    
+    compatible_mods = []
     incompatible_mods = []
-    
-    cleaned_hashes_list = clean_hashes_list(hashes_list)
-    for mod in cleaned_hashes_list:
-        print(mod['game_versions'])
-        if version in mod['game_versions'] and mod_loader.lower() in [l.lower() for l in mod['loaders']]:
-            compatible_mods.append(mod['title'])
-        else:
-            incompatible_mods.append(mod['title'])
-            
-    print(f"Compatible: {len(compatible_mods)} | Incompatible: {len(incompatible_mods)}\n")
-    print("Incompatible Mods:\n")
-    for mod in incompatible_mods:
-        print(f" - {mod}")
-    print()
+    mods_to_download = []
 
-    update = input("Do you wanna update it? - yes or no").lower()
+    for mod in local_mods_mapped:
+        p_id = mod['project_id']
+        title = mod['title']
+        
+        url_version = f"https://api.modrinth.com/v2/project/{p_id}/version"
+        try:
+            response = requests.get(url_version, headers=api.HEADERS)
+            if response.status_code == 200:
+                versions = response.json()
+                found_update = False
+                
+                for ver in versions:
+                    has_version = version in ver.get('game_versions', [])
+                    has_loader = loader_str in [l.lower() for l in ver.get('loaders', [])]
+                                
+                    if has_version and has_loader:
+                        compatible_mods.append(title)
+                        mods_to_download.append({
+                            'title': title,
+                            'filename': ver['files'][0]['filename'],
+                            'url': ver['files'][0]['url']
+                        })
+                        found_update = True
+                        print(f"    -> [COMPATBILE MOD FOUND!]: {ver['files'][0]['filename']}")
+                        break
+                
+                if not found_update:
+                    incompatible_mods.append(title)
+            else:
+                print(f"[Warning] Incorrect ID detected to {title}. Reseting local identifier...")
+                if title + ".jar" in mods_db:
+                    del mods_db[title + ".jar"]
+                    database_updated = True
+                incompatible_mods.append(title)
+                
+        except Exception as e:
+            print(f"[Script Error] Failure to Process {title}: {e}\n")
+            incompatible_mods.append(title)
+
+    if database_updated:
+        io_local.save_mods_database(mods_db)
+
+    print(f"\n Compatible_mods {len(compatible_mods)} | incompatible: {len(incompatible_mods)}\n")
+    if incompatible_mods:
+        print("Mods without update avaiable:")
+        for mod in incompatible_mods:
+            print(f" - {mod}")
+        print()
+
+    if not mods_to_download:
+        print("No updates found for the version!")
+        return
     
+    update = input("Would you like to update? (yes/no)\n").lower()
     if update == 'yes':
         io_local.backup_modpack()
         io_local.clean_mods_folder()
-        download_modpack(cleaned_hashes_list)
-        
-        
-    if update == 'no':
-        return
-def clean_hashes_list(hashes_list):
-    
-    cleaned_hash_list = []
-    
-    for _, file_info in hashes_list.items():  
-        
-        title = file_info.get('name','Unknown Mod File')
-        game_versions = file_info.get('game_versions',[])
-        version_type = file_info.get('version_type', 'release')        
-        loaders = file_info.get('loaders', [])
-        files = file_info.get('files',[])
-        
-          
-        dict_hash = {'title': title,
-                    'game_versions' : game_versions,
-                     'version_type':version_type,
-                     'loaders': loaders,
-                     'files': files} 
-        cleaned_hash_list.append(dict_hash)
-    return cleaned_hash_list
+        download_modpack(mods_to_download)
+        print("\n[Success] Modpack updated Successfully!")
+    else:
+        print("Cancelled Update!")
 
+def get_minecraft_mods_path():
+    sistema = platform.system()
+    home = os.path.expanduser("~")
+    
+    if sistema == "Windows":
+        appdata = os.getenv("APPDATA")
+        if appdata:
+            return os.path.join(appdata, ".minecraft", "mods")
+        return os.path.join(home, "AppData", "Roaming", ".minecraft", "mods")
+        
+    elif sistema == "Darwin":  
+        return os.path.join(home, "Library", "Application Support", "minecraft", "mods")
+        
+    else:
+        return os.path.join(home, ".minecraft", "mods")
 
-def download_modpack(cleaned_hashes_list):
+def download_modpack(mod_to_download):
+    print("\n Starting Downloads...")
     
-    for mod in cleaned_hashes_list:
-        download_url = mod['files'][0]['url']
-        file_name = mod['files'][0]['filename']
-        response = api.get_download_response(download_url)
-        
-        final_path = os.path.join(io_local.path,file_name)
-        
-        with open(final_path, 'wb') as f:
-            f.write(response.content)
-            
+    mods_folder = get_minecraft_mods_path()
     
-        
+    print(f"Target directory: {mods_folder}")
+
+    if not os.path.exists(mods_folder):
+        os.makedirs(mods_folder)
+   
+    for mod in mod_to_download:
+        try:
+            print(f"Downloading {mod['title']}...")
+            file_bytes = api.download_file_bytes(mod['url'])
             
+            final_path = os.path.join(mods_folder, mod['filename'])
+            
+            with open(final_path, 'wb') as f:
+                f.write(file_bytes)
+            print(f" -> [Success]: {mod['filename']} downloaded directly to .minecraft/mods!")
+            
+        except Exception as e:
+            print(f"Failed to download {mod['title']}: {e}\n")
